@@ -25,6 +25,7 @@ func Run(path string, quality int) {
 	fmt.Printf("%c[2K", 27)
 	fmt.Printf("  Final Score = %d\n", int(model.Energy()))
 	fmt.Printf(" Elapsed Time = %.2fs\n", elapsed)
-	out := fmt.Sprintf("%s.%d.gif", path, int(model.Energy()))
-	SaveGIF(out, 8, w, h, model.Points)
+	// out := fmt.Sprintf("%s.%d.gif", path, int(model.Energy()))
+	// SaveGIF(out, 8, w, h, model.Points)
+	SaveSVG(fmt.Sprintf("%s.%d.svg", path, int(model.Energy())), w, h, model.Points)
 }

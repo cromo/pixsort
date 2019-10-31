@@ -1,11 +1,15 @@
 package pixsort
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/gif"
 	"image/png"
+	"math"
 	"os"
+
+	svg "github.com/ajstarks/svgo"
 )
 
 func LoadPNG(path string) (image.Image, error) {
@@ -26,7 +30,8 @@ func GetPoints(im image.Image) (int, int, []Point) {
 		for x := 0; x < w; x++ {
 			c := im.At(x, y)
 			r, _, _, a := c.RGBA()
-			if r < 128 && a > 128 {
+			// fmt.Printf("R: %d, A: %d\n", r, a)
+			if r < 65535 && a > 0 {
 				result = append(result, Point{x, y})
 			}
 		}
@@ -65,4 +70,52 @@ func SaveGIF(path string, m, w, h int, points []Point) error {
 	}
 	defer file.Close()
 	return gif.EncodeAll(file, &g)
+}
+
+func SaveSVG(path string, w, h int, points []Point) error {
+	segments := groupSegments(points)
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	canvas := svg.New(file)
+	canvas.Start(w, h)
+	// canvas.Path("M 1 1", "fill:none; stroke: red")
+	// canvas.Path("M 1 2 L 2 2", "fill:none; stroke: blue")
+	// canvas.Path("M 1 3 L 2 3 2 3", "fill:none; stroke: green")
+	str := ""
+	for _, s := range segments {
+		// canvas.Circle(s[0].X, s[0].Y, 1, "fill:none;stroke:gray")
+		str += fmt.Sprintf("\nM %d %d", s[0].X, s[0].Y)
+		for _, point := range s[1:] {
+			str += fmt.Sprintf(" %d %d", point.X, point.Y)
+		}
+	}
+	canvas.Path(str, "fill:none;stroke:black;stroke-linecap:square")
+	canvas.End()
+	return nil
+}
+
+func groupSegments(ps []Point) [][]Point {
+	ss := make([][]Point, 0)
+	s := make([]Point, 0)
+	for _, p := range ps {
+		if len(s) == 0 {
+			s = append(s, p)
+			continue
+		}
+		last := s[len(s)-1]
+		if math.Abs(float64(last.X-p.X)) <= 1 && math.Abs(float64(last.Y-p.Y)) <= 1 {
+			s = append(s, p)
+		} else {
+			ss = append(ss, s)
+			s = make([]Point, 1)
+			s[0] = p
+		}
+	}
+	if len(s) != 0 {
+		ss = append(ss, s)
+	}
+	return ss
 }

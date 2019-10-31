@@ -1,6 +1,8 @@
 package pixsort
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type Point struct {
 	X, Y int
