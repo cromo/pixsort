@@ -1,6 +1,6 @@
 ## pixsort
 
-Applying the traveling salesman problem to pixel art.
+Applying the traveling salesman problem to pixel art. This fork adds conversion of that path to SVG paths suitable for pen plotting.
 
 Goal: Find the shortest path to visit all black pixels in an image.
 
